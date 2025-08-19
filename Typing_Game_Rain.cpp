@@ -49,8 +49,8 @@ void loadWordsFromFile(std::vector<std::string>& words, const std::string& filen
 // ## 메인 게임 로직 함수 ##
 
 void playTypingGame() {
-    setConsoleSize(); // 전체 프로그램 시작 시 콘솔 크기 한 번만 설정
     // --- 1. 게임 초기화 ---
+    setConsoleSize(); // 게임 시작 시점에 맞춰 창 크기 변경
     system("cls"); // 게임 시작 전 화면 정리
     srand((unsigned int)time(NULL));
 
@@ -95,7 +95,20 @@ void playTypingGame() {
             if (ch == 13 || ch == 32) { // 엔터 또는 스페이스바
                 for (auto it = fallingWords.begin(); it != fallingWords.end(); ++it) {
                     if (it->first == currentInput) {
-                        score += 10;
+                        // --- 단어 길이에 따른 점수 계산 로직 ---
+                        int wordLength = it->first.length();
+                        int gainedScore = 0;
+
+                        if (wordLength <= 4) {
+                            gainedScore = 10; // 4글자 이하면 기본 10점
+                        }
+                        else {
+                            // 4글자 초과 시, 기본 10점에 초과된 글자 수만큼 점수 추가
+                            gainedScore = 10 + (wordLength - 4);
+                        }
+                        score += gainedScore;
+                        // --- 점수 계산 로직 끝 ---
+
                         gotoxy(it->second.X, it->second.Y);
                         std::cout << std::string(it->first.length(), ' ');
                         fallingWords.erase(it);
@@ -150,13 +163,15 @@ void playTypingGame() {
 }
 
 
-//int main() {
-//    
-//
-//    // 나중에 여기에 메뉴를 만들고 선택에 따라 함수를 호출하면 됩니다.
-//    // 예: if (menu_select == 1) playTypingGame();
-//
-//    playTypingGame(); // 게임 함수 호출
-//
-//    return 0;
-//}
+int main() {
+    // 프로그램의 기본 콘솔 환경 설정
+    // (메뉴 표시 등을 위해 필요하다면 여기에 추가)
+
+    // 메뉴를 표시하고 사용자 선택을 받는 로직을 구현할 수 있습니다.
+    // ...
+
+    // 사용자가 게임 시작을 선택했다고 가정하고 게임 함수 호출
+    playTypingGame();
+
+    return 0;
+}
