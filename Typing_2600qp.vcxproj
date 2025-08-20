@@ -127,6 +127,10 @@
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="Typing_Game_Rain.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="menu.h" />
+    <ClInclude Include="Typing_Game_Rain.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

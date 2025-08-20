@@ -1,19 +1,18 @@
-﻿#include <iostream>
-#include <vector>
-#include <string>
-#include <conio.h>
-#include <windows.h>
-#include <ctime>
-#include <fstream>
+﻿// TypingGame.cpp
 
-// 전역으로 사용할 상수 정의
-#define BOARD_WIDTH 80
-#define BOARD_HEIGHT 40
+#include "Typing_Game_Rain.h" // 우리가 만든 헤더 파일을 포함합니다.
+#include "menu.h"
 
-// ## 유틸리티 함수들 ##
+// 추가적으로 이 파일 내부에서만 필요한 헤더들을 포함합니다.
+#include <iostream>
+#include <conio.h>   // _kbhit, _getch
+#include <ctime>     // time, clock
+#include <fstream>   // ifstream
+
+// ## 유틸리티 함수 정의 ##
 
 // 지정된 좌표로 콘솔 커서를 이동시키는 함수
-void gotoxy(int x, int y) {
+void gotoxy_raingame(int x, int y) {
     COORD pos = { (SHORT)x, (SHORT)y };
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
@@ -21,7 +20,8 @@ void gotoxy(int x, int y) {
 // 콘솔 창의 크기를 설정하고 커서를 숨기는 함수
 void setConsoleSize() {
     char command[128];
-    sprintf_s(command, "mode con cols=%d lines=%d", BOARD_WIDTH, BOARD_HEIGHT);
+    // C++ 스타일로 안전하게 문자열을 만들기 위해 snprintf를 사용하는 것이 더 좋습니다.
+    snprintf(command, sizeof(command), "mode con cols=%d lines=%d", BOARD_WIDTH, BOARD_HEIGHT);
     system(command);
 
     CONSOLE_CURSOR_INFO cursorInfo;
@@ -34,10 +34,10 @@ void setConsoleSize() {
 void loadWordsFromFile(std::vector<std::string>& words, const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        gotoxy(0, 0);
+        gotoxy_raingame(0, 0);
         std::cout << filename << " 파일을 열 수 없습니다!" << std::endl;
         Sleep(2000);
-        exit(1);
+        exit(1); // 파일을 못 열면 게임 진행이 불가능하므로 종료
     }
     std::string word;
     while (file >> word) {
@@ -46,22 +46,23 @@ void loadWordsFromFile(std::vector<std::string>& words, const std::string& filen
     file.close();
 }
 
-// ## 메인 게임 로직 함수 ##
+
+// ## 메인 게임 로직 함수 정의 ##
 
 void playTypingGame() {
     // --- 1. 게임 초기화 ---
-    setConsoleSize(); // 게임 시작 시점에 맞춰 창 크기 변경
-    system("cls"); // 게임 시작 전 화면 정리
+    setConsoleSize();
+    system("cls");
     srand((unsigned int)time(NULL));
 
     std::vector<std::string> words;
     loadWordsFromFile(words, "words.txt");
 
     if (words.empty()) {
-        gotoxy(0, 0);
+        gotoxy_raingame(0, 0);
         std::cout << "words.txt 파일에 단어가 없습니다! 게임을 시작할 수 없습니다." << std::endl;
         Sleep(2000);
-        return; // main으로 복귀
+        return;
     }
 
     std::vector<std::pair<std::string, COORD>> fallingWords;
@@ -69,11 +70,10 @@ void playTypingGame() {
     int life = 5;
     std::string currentInput = "";
 
-    // 시간 기반 로직을 위한 변수들
     clock_t lastUpdateTime = clock();
     clock_t wordCreationTime = clock();
     int fallInterval = 500;
-    int creationInterval = 1500; // 단어 생성 빈도 조절 (1.5초)
+    int creationInterval = 1500;
 
     // --- 2. 메인 게임 루프 ---
     while (life > 0) {
@@ -95,34 +95,27 @@ void playTypingGame() {
             if (ch == 13 || ch == 32) { // 엔터 또는 스페이스바
                 for (auto it = fallingWords.begin(); it != fallingWords.end(); ++it) {
                     if (it->first == currentInput) {
-                        // --- 단어 길이에 따른 점수 계산 로직 ---
+                        // 단어 길이에 따른 점수 계산 로직
                         int wordLength = it->first.length();
-                        int gainedScore = 0;
-
-                        if (wordLength <= 4) {
-                            gainedScore = 10; // 4글자 이하면 기본 10점
-                        }
-                        else {
-                            // 4글자 초과 시, 기본 10점에 초과된 글자 수만큼 점수 추가
-                            gainedScore = 10 + (wordLength - 4);
-                        }
+                        int gainedScore = (wordLength <= 4) ? 10 : 10 + (wordLength - 4);
                         score += gainedScore;
-                        // --- 점수 계산 로직 끝 ---
 
-                        gotoxy(it->second.X, it->second.Y);
+                        // 맞춘 단어 화면에서 지우기
+                        gotoxy_raingame(it->second.X, it->second.Y);
                         std::cout << std::string(it->first.length(), ' ');
+
                         fallingWords.erase(it);
-                        break;
+                        break; // 단어를 찾았으면 루프 종료
                     }
                 }
-                currentInput = "";
+                currentInput = ""; // 입력 초기화
             }
             else if (ch == 8) { // 백스페이스
                 if (!currentInput.empty()) {
                     currentInput.pop_back();
                 }
             }
-            else if (isprint(ch)) {
+            else if (isprint(ch)) { // 출력 가능한 문자인 경우
                 currentInput += ch;
             }
         }
@@ -130,17 +123,20 @@ void playTypingGame() {
         // 단어 낙하 및 화면 그리기 로직 (시간 기반)
         if (currentTime - lastUpdateTime > fallInterval) {
             for (auto it = fallingWords.begin(); it != fallingWords.end(); ) {
-                gotoxy(it->second.X, it->second.Y);
+                // 이전 위치 지우기
+                gotoxy_raingame(it->second.X, it->second.Y);
                 std::cout << std::string(it->first.length(), ' ');
 
-                it->second.Y++;
+                it->second.Y++; // y좌표 증가 (낙하)
 
+                // 바닥에 닿았는지 체크
                 if (it->second.Y > BOARD_HEIGHT - 2) {
                     life--;
-                    it = fallingWords.erase(it);
+                    it = fallingWords.erase(it); // 바닥에 닿은 단어 삭제
                 }
                 else {
-                    gotoxy(it->second.X, it->second.Y);
+                    // 새 위치에 단어 그리기
+                    gotoxy_raingame(it->second.X, it->second.Y);
                     std::cout << it->first;
                     ++it;
                 }
@@ -149,29 +145,16 @@ void playTypingGame() {
         }
 
         // UI 그리기 로직
-        gotoxy(0, BOARD_HEIGHT - 2);
+        gotoxy_raingame(0, BOARD_HEIGHT - 2);
         std::cout << "Score: " << score << " | Life: " << life << "    ";
-        gotoxy(0, BOARD_HEIGHT - 1);
-        std::cout << "Input: " << currentInput << std::string(50, ' ');
+        gotoxy_raingame(0, BOARD_HEIGHT - 1);
+        std::cout << "Input: " << currentInput << std::string(50, ' '); // 이전 입력 잔상 제거
     }
 
     // --- 3. 게임 오버 처리 ---
     system("cls");
-    gotoxy(BOARD_WIDTH / 2 - 10, BOARD_HEIGHT / 2);
+    gotoxy_raingame(BOARD_WIDTH / 2 - 10, BOARD_HEIGHT / 2);
+    std::cout << std::endl << std::endl << std::endl;
     std::cout << "Game Over! Your score is " << score << std::endl;
     Sleep(3000);
 }
-
-
-//int main() {
-//    // 프로그램의 기본 콘솔 환경 설정
-//    // (메뉴 표시 등을 위해 필요하다면 여기에 추가)
-//
-//    // 메뉴를 표시하고 사용자 선택을 받는 로직을 구현할 수 있습니다.
-//    // ...
-//
-//    // 사용자가 게임 시작을 선택했다고 가정하고 게임 함수 호출
-//    playTypingGame();
-//
-//    return 0;
-//}
