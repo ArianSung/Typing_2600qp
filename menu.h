@@ -46,3 +46,4 @@ void startTypingPractice();
 void startRainGame();
 void displayWinScreen();
 void displayGameOverScreen();
+void startAiBattleGame();

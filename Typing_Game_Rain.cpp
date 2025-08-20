@@ -118,6 +118,8 @@ void playTypingGame() {
             else if (isprint(ch)) { // 출력 가능한 문자인 경우
                 currentInput += ch;
             }
+            else if (ch == 27)
+                break;
         }
 
         // 단어 낙하 및 화면 그리기 로직 (시간 기반)
@@ -155,6 +157,6 @@ void playTypingGame() {
     system("cls");
     gotoxy_raingame(BOARD_WIDTH / 2 - 10, BOARD_HEIGHT / 2);
     std::cout << std::endl << std::endl << std::endl;
-    std::cout << "Game Over! Your score is " << score << std::endl;
+    std::cout << "                           Game Over! Your score is " << score << std::endl;
     Sleep(3000);
 }
