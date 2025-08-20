@@ -7,302 +7,313 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <fcntl.h> // for _O_U16TEXT
+#include <io.h>    // for _setmode
+#include <random>  // for std::shuffle
 
-// Windows 전용 헤더
+// 콘솔 조작을 위한 Windows 전용 헤더
 #define NOMINMAX
 #include <windows.h>
 #include <conio.h>
 
-// ========================================================================================
-// 전역 상수 및 클래스/네임스페이스 선언부
-// ========================================================================================
+// 콘솔 텍스트 색상 코드
+constexpr int COLOR_DEFAULT = 7;
+constexpr int COLOR_GREEN = 10;
+constexpr int COLOR_RED = 12;
 
-// 콘솔 텍스트 색상 코드 정의
-#define COLOR_DEFAULT 7
-#define COLOR_GREEN 10
-#define COLOR_RED 12
+// --- 유틸리티 함수 ---
 
-// 네임스페이스 선언
-namespace ConsoleUtils {
-    void gotoxy(int x, int y);
-    void setColor(int color);
+// UTF-8 std::string을 std::wstring으로 변환하는 헬퍼 함수
+std::wstring utf8_to_wstring(const std::string& str) {
+    if (str.empty()) return std::wstring();
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+    std::wstring wstrTo(size_needed, 0);
+    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+    return wstrTo;
 }
 
-// 클래스 선언
-class Utility {
+// 콘솔 관련 함수들을 위한 네임스페이스
+namespace Console {
+    void gotoxy(int x, int y) {
+        COORD pos = { (SHORT)x, (SHORT)y };
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+    }
+
+    void setColor(int color) {
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
+    }
+
+    void clearScreen() {
+        system("cls");
+    }
+
+    void hideCursor() {
+        CONSOLE_CURSOR_INFO cursorInfo;
+        GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+        cursorInfo.bVisible = FALSE;
+        SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+    }
+
+    void showCursor() {
+        CONSOLE_CURSOR_INFO cursorInfo;
+        GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+        cursorInfo.bVisible = TRUE;
+        SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+    }
+}
+
+// --- 핵심 게임 로직 ---
+
+class TypingGame {
 public:
-    static void clearScreen();
-    static std::vector<std::string> loadContentFromFile(const std::string& filename);
-};
-
-class TypingPractice {
-public:
-    void run(const std::vector<std::string>& words, const std::string& modeName);
-private:
-    int calculateWPM(int charactersTyped, double timeInSeconds);
-    double calculateAccuracy(int totalCharacters, int mistakes);
-};
-
-class GameManager {
-public:
-    void start();
-private:
-    void displayMainMenu();
-    void selectTypingMode();
-    void exitGame();
-    TypingPractice typingPractice;
-};
-
-
-// ========================================================================================
-// 구현부
-// ========================================================================================
-
-// --- 유틸리티 함수 및 클래스 구현 ---
-
-void ConsoleUtils::gotoxy(int x, int y) {
-    COORD pos = { (SHORT)x, (SHORT)y };
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
-}
-
-void ConsoleUtils::setColor(int color) {
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
-}
-
-void Utility::clearScreen() {
-    system("cls");
-}
-
-std::vector<std::string> Utility::loadContentFromFile(const std::string& filename) {
-    std::vector<std::string> content;
-    std::ifstream file(filename);
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (!line.empty()) {
-                content.push_back(line);
+    void start() {
+        SetConsoleTitle(L"타자 연습 게임");
+        bool isRunning = true;
+        while (isRunning) {
+            displayMainMenu();
+            wchar_t choice = _getwch();
+            switch (choice) {
+            case L'1':
+                selectTypingMode();
+                break;
+            case L'2':
+                showComingSoon();
+                break;
+            case L'3':
+                isRunning = false;
+                break;
+            default:
+                showMessage(L"잘못된 입력입니다. 다시 시도해 주세요.", 1000);
+                break;
             }
         }
-        file.close();
-    }
-    else {
-        ConsoleUtils::gotoxy(0, 5);
-        std::cout << "'" << filename << "' 파일을 열 수 없습니다. 확인해주세요." << std::endl;
-        Sleep(2000);
-    }
-    return content;
-}
-
-// --- 타자 연습 클래스 구현 ---
-
-void displayRealTimeStats(int wpm, double accuracy, int mistakes) {
-    ConsoleUtils::gotoxy(0, 10);
-    ConsoleUtils::setColor(COLOR_DEFAULT);
-    std::cout << "====================================================" << std::endl;
-    std::cout << "  타수: " << wpm << " 타/분        " << std::endl;
-    std::cout << "  정확도: ";
-    printf("%.2f%%", accuracy);
-    std::cout << "           " << std::endl;
-    std::cout << "  오타: " << mistakes << " 개          " << std::endl;
-    std::cout << "====================================================" << std::endl;
-}
-
-void TypingPractice::run(const std::vector<std::string>& content, const std::string& modeName) {
-    if (content.empty()) {
-        return;
+        showMessage(L"프로그램을 종료합니다.", 1000);
     }
 
-    int totalTypedCount = 0;
-    int totalMistakeCount = 0;
-    double totalElapsedTime = 0.0;
+private:
+    void displayMainMenu() {
+        Console::clearScreen();
+        Console::setColor(COLOR_DEFAULT);
+        Console::showCursor();
+        std::wcout << L"==========================\n"
+            << L"===   타자 연습 게임   ===\n"
+            << L"==========================\n"
+            << L"  1. 타자 연습\n"
+            << L"  2. 산성비 (준비 중)\n"
+            << L"  3. 종료\n"
+            << L"--------------------------\n"
+            << L"메뉴를 선택하세요: ";
+    }
 
-    for (const auto& text : content) {
-        std::string userInput = "";
-        int currentMistakes = 0;
+    void selectTypingMode() {
+        bool isSelecting = true;
+        while (isSelecting) {
+            Console::clearScreen();
+            Console::setColor(COLOR_DEFAULT);
+            Console::showCursor();
+            std::wcout << L"======================\n"
+                << L"=== 타자 연습 모드 ===\n"
+                << L"======================\n"
+                << L"  1. 단어 연습\n"
+                << L"  2. 긴 글 연습\n"
+                << L"  3. 메인 메뉴로 돌아가기\n"
+                << L"----------------------\n"
+                << L"모드를 선택하세요: ";
 
-        Utility::clearScreen();
-        ConsoleUtils::gotoxy(0, 0);
-        ConsoleUtils::setColor(COLOR_DEFAULT);
-        std::cout << "--- " << modeName << " --- (ESC: 메인 메뉴로)" << std::endl;
-        ConsoleUtils::gotoxy(0, 2);
-        std::cout << "제시어: " << text << std::endl;
-        ConsoleUtils::gotoxy(0, 4);
-        std::cout << "입력  : ";
+            wchar_t choice = _getwch();
+            switch (choice) {
+            case L'1':
+                runPractice(L"words.txt", L"단어 연습");
+                break;
+            case L'2':
+                runPractice(L"long.txt", L"긴 글 연습");
+                break;
+            case L'3':
+                isSelecting = false;
+                break;
+            default:
+                showMessage(L"잘못된 입력입니다. 다시 시도해 주세요.", 1000);
+                break;
+            }
+        }
+    }
 
-        auto startTime = std::chrono::high_resolution_clock::now();
+    void runPractice(const std::wstring& filename, const std::wstring& modeName) {
+        std::vector<std::wstring> content = loadContentFromFile(filename);
+        if (content.empty()) {
+            showMessage(L"'" + filename + L"' 파일을 열 수 없거나 비어있습니다.", 2000);
+            return;
+        }
 
-        while (userInput.length() < text.length()) {
-            auto now = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> duration = now - startTime;
-            double elapsedTime = duration.count();
-            int wpm = calculateWPM(userInput.length() - currentMistakes, elapsedTime);
-            double accuracy = calculateAccuracy(userInput.length(), currentMistakes);
-            displayRealTimeStats(wpm, accuracy, currentMistakes);
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(content.begin(), content.end(), g);
 
-            ConsoleUtils::gotoxy(8 + userInput.length(), 4);
+        long long totalPromptChars = 0;
+        int totalMistakeCount = 0;
+        double totalElapsedTime = 0.0;
 
-            if (_kbhit()) {
-                char ch = _getch();
+        for (const auto& text : content) {
+            std::wstring userInput = L"";
 
-                if (ch == 27) { // ESC
-                    ConsoleUtils::setColor(COLOR_DEFAULT);
-                    return;
-                }
-                else if (ch == '\b' || ch == 8) { // Backspace
-                    if (!userInput.empty()) {
-                        if (userInput.back() != text[userInput.length() - 1]) {
-                            currentMistakes--;
+            Console::clearScreen();
+            Console::setColor(COLOR_DEFAULT);
+            std::wcout << L"--- " << modeName << L" --- (ESC: 메뉴로 돌아가기, Enter: 입력 완료)\n\n";
+            std::wcout << L"제시어: " << text << L"\n\n";
+            std::wcout << L"입력  : ";
+
+            auto startTime = std::chrono::high_resolution_clock::now();
+
+            while (true) {
+                Console::hideCursor();
+                auto now = std::chrono::high_resolution_clock::now();
+                double elapsedTime = std::chrono::duration<double>(now - startTime).count();
+                displayRealTimeStats(userInput.length(), elapsedTime);
+                Console::gotoxy(8 + userInput.length(), 4);
+                Console::showCursor();
+
+                if (_kbhit()) {
+                    wchar_t ch = _getwch();
+                    if (ch == 27) { // ESC 키
+                        Console::showCursor();
+                        return;
+                    }
+                    else if (ch == L'\r') { // Enter 키
+                        break; // while 루프 탈출
+                    }
+                    else if (ch == L'\b' || ch == 8) { // 백스페이스
+                        if (!userInput.empty()) {
+                            userInput.pop_back();
+
+                            Console::hideCursor();
+                            Console::gotoxy(8 + userInput.length(), 4);
+                            std::wcout << L" ";
+                            Console::gotoxy(8 + userInput.length(), 4);
+                            Console::showCursor();
                         }
-                        userInput.pop_back();
-                        ConsoleUtils::gotoxy(8 + userInput.length(), 4);
-                        std::cout << " ";
                     }
-                }
-                else if (isprint(ch)) {
-                    if (ch == text[userInput.length()]) {
-                        ConsoleUtils::setColor(COLOR_GREEN);
+                    else if (iswprint(ch)) { // 일반 문자 입력
+                        size_t current_idx = userInput.length();
+                        if (current_idx < text.length() && ch == text[current_idx]) {
+                            Console::setColor(COLOR_GREEN);
+                        }
+                        else {
+                            Console::setColor(COLOR_RED);
+                        }
+                        std::wcout << ch;
+                        userInput += ch;
                     }
-                    else {
-                        ConsoleUtils::setColor(COLOR_RED);
-                        currentMistakes++;
-                    }
-                    std::cout << ch;
-                    userInput += ch;
                 }
             }
+
+            auto endTime = std::chrono::high_resolution_clock::now();
+
+            // --- 최종 오타 계산 ---
+            int currentMistakes = calculateMistakes(text, userInput);
+
+            totalElapsedTime += std::chrono::duration<double>(endTime - startTime).count();
+            totalPromptChars += text.length();
+            totalMistakeCount += currentMistakes;
         }
 
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> duration = endTime - startTime;
-        totalElapsedTime += duration.count();
-        totalTypedCount += userInput.length();
-        totalMistakeCount += currentMistakes;
+        Console::showCursor();
+        displayFinalResults(totalPromptChars, totalMistakeCount, totalElapsedTime);
+        std::wcout << L"\n아무 키나 눌러 메뉴로 돌아가세요...";
+        _getch();
     }
 
-    Utility::clearScreen();
-    ConsoleUtils::setColor(COLOR_DEFAULT);
-    std::cout << "=== 타자 연습 종료 ===" << std::endl << std::endl;
-    printf("총 걸린 시간: %.2f초\n", totalElapsedTime);
-    int finalWpm = calculateWPM(totalTypedCount - totalMistakeCount, totalElapsedTime);
-    std::cout << "평균 타수: " << finalWpm << "타/분" << std::endl;
-    double finalAccuracy = calculateAccuracy(totalTypedCount, totalMistakeCount);
-    printf("정확도: %.2f%%\n", finalAccuracy);
-    std::cout << "총 오타 수: " << totalMistakeCount << std::endl;
+    // 실시간 통계창에서 '오타' 항목 제거
+    void displayRealTimeStats(int typedChars, double elapsedTime) {
+        Console::gotoxy(0, 8);
+        Console::setColor(COLOR_DEFAULT);
+        int wpm = calculateWPM(typedChars, elapsedTime);
+        double accuracy = 100.0 * (static_cast<double>(typedChars) / (typedChars + 1)); // 임시 정확도
 
-    std::cout << "\n메인 메뉴로 돌아가려면 아무 키나 누르세요..." << std::endl;
-    _getch();
-}
-
-int TypingPractice::calculateWPM(int charactersTyped, double timeInSeconds) {
-    if (timeInSeconds <= 0 || charactersTyped <= 0) return 0;
-    return static_cast<int>((static_cast<double>(charactersTyped) / 5.0) / (timeInSeconds / 60.0));
-}
-
-double TypingPractice::calculateAccuracy(int totalCharacters, int mistakes) {
-    if (totalCharacters <= 0) return 100.0;
-    double accuracy = 100.0 * (static_cast<double>(totalCharacters - mistakes) / totalCharacters);
-    return std::max(0.0, accuracy);
-}
-
-// --- 게임 매니저 클래스 구현 ---
-
-void GameManager::start() {
-    bool running = true;
-    while (running) {
-        displayMainMenu();
-        char choice;
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-        switch (choice) {
-        case '1':
-            selectTypingMode();
-            break;
-        case '2':
-            Utility::clearScreen();
-            ConsoleUtils::setColor(COLOR_DEFAULT);
-            std::cout << "산성비 게임은 아직 준비 중입니다." << std::endl;
-            Sleep(2000);
-            break;
-        case '3':
-            exitGame();
-            running = false;
-            break;
-        default:
-            Utility::clearScreen();
-            ConsoleUtils::setColor(COLOR_DEFAULT);
-            std::cout << "잘못된 입력입니다. 다시 시도해 주세요." << std::endl;
-            Sleep(1000);
-            break;
-        }
+        wprintf(L"====================================================\n");
+        wprintf(L"  타수   : %-5d 타/분\n", wpm);
+        wprintf(L"  정확도 : --.---%%\n"); // 실시간 정확도 계산이 어려우므로 표시하지 않음
+        wprintf(L"====================================================\n");
     }
-}
 
-void GameManager::displayMainMenu() {
-    Utility::clearScreen();
-    ConsoleUtils::setColor(COLOR_DEFAULT);
-    std::cout << "==========================" << std::endl;
-    std::cout << "=== 타자 연습 프로그램 ===" << std::endl;
-    std::cout << "==========================" << std::endl;
-    std::cout << "  1. 타자 연습" << std::endl;
-    std::cout << "  2. 산성비 게임 (준비 중)" << std::endl;
-    std::cout << "  3. 종료" << std::endl;
-    std::cout << "--------------------------" << std::endl;
-    std::cout << "메뉴를 선택하세요: ";
-}
+    void displayFinalResults(long long totalPromptChars, int totalMistakes, double totalTime) {
+        Console::clearScreen();
+        Console::setColor(COLOR_DEFAULT);
 
-void GameManager::selectTypingMode() {
-    bool running = true;
-    while (running) {
-        Utility::clearScreen();
-        ConsoleUtils::setColor(COLOR_DEFAULT);
-        std::cout << "======================" << std::endl;
-        std::cout << "=== 타자 연습 모드 ===" << std::endl;
-        std::cout << "======================" << std::endl;
-        std::cout << "  1. 단어 연습" << std::endl;
-        std::cout << "  2. 긴 글 연습" << std::endl;
-        std::cout << "  3. 뒤로 가기" << std::endl;
-        std::cout << "----------------------" << std::endl;
-        std::cout << "모드를 선택하세요: ";
+        long long correctChars = totalPromptChars > totalMistakes ? totalPromptChars - totalMistakes : 0;
+        int finalWpm = calculateWPM(correctChars, totalTime);
+        double finalAccuracy = calculateAccuracy(totalPromptChars, totalMistakes);
 
-        char choice;
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-        if (choice == '1') {
-            std::vector<std::string> words = Utility::loadContentFromFile("words.txt");
-            typingPractice.run(words, "단어");
-        }
-        else if (choice == '2') {
-            std::vector<std::string> longTexts = Utility::loadContentFromFile("long.txt");
-            typingPractice.run(longTexts, "긴 글");
-        }
-        else if (choice == '3') {
-            running = false;
-        }
-        else {
-            Utility::clearScreen();
-            ConsoleUtils::setColor(COLOR_DEFAULT);
-            std::cout << "잘못된 입력입니다. 다시 시도해 주세요." << std::endl;
-            Sleep(1000);
-        }
+        std::wcout << L"=== 연습 완료 ===\n\n";
+        wprintf(L"총 시간      : %.2f 초\n", totalTime);
+        wprintf(L"평균 타수    : %d 타/분\n", finalWpm);
+        wprintf(L"정확도       : %.2f%%\n", finalAccuracy);
+        wprintf(L"총 오타 수   : %d 개\n", totalMistakes);
     }
-}
 
-void GameManager::exitGame() {
-    Utility::clearScreen();
-    ConsoleUtils::setColor(COLOR_DEFAULT);
-    std::cout << "프로그램을 종료합니다." << std::endl;
-    Sleep(1000);
-}
+    std::vector<std::wstring> loadContentFromFile(const std::wstring& filename) {
+        std::vector<std::wstring> content;
+        std::ifstream file(filename);
+        if (file.is_open()) {
+            std::string line;
+            while (std::getline(file, line)) {
+                if (!line.empty()) {
+                    content.push_back(utf8_to_wstring(line));
+                }
+            }
+            file.close();
+        }
+        return content;
+    }
+
+    // Levenshtein 거리 알고리즘을 사용해 두 문자열의 차이(오타 수)를 계산
+    int calculateMistakes(const std::wstring& s1, const std::wstring& s2) {
+        const size_t len1 = s1.size(), len2 = s2.size();
+        std::vector<std::vector<int>> d(len1 + 1, std::vector<int>(len2 + 1));
+
+        d[0][0] = 0;
+        for (size_t i = 1; i <= len1; ++i) d[i][0] = i;
+        for (size_t i = 1; i <= len2; ++i) d[0][i] = i;
+
+        for (size_t i = 1; i <= len1; ++i)
+            for (size_t j = 1; j <= len2; ++j)
+                d[i][j] = std::min({ d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (s1[i - 1] == s2[j - 1] ? 0 : 1) });
+
+        return d[len1][len2];
+    }
+
+    int calculateWPM(long long charactersTyped, double timeInSeconds) {
+        if (timeInSeconds <= 0 || charactersTyped <= 0) return 0;
+        return static_cast<int>((static_cast<double>(charactersTyped) / 5.0) / (timeInSeconds / 60.0));
+    }
+
+    double calculateAccuracy(long long totalCharacters, int mistakes) {
+        if (totalCharacters <= 0) return 0.0;
+        double correctChars = totalCharacters > mistakes ? totalCharacters - mistakes : 0;
+        double accuracy = 100.0 * (correctChars / totalCharacters);
+        return std::max(0.0, accuracy);
+    }
+
+    void showMessage(const std::wstring& message, int milliseconds) {
+        Console::clearScreen();
+        Console::setColor(COLOR_DEFAULT);
+        Console::showCursor();
+        std::wcout << message << std::endl;
+        Sleep(milliseconds);
+    }
+
+    void showComingSoon() {
+        showMessage(L"이 기능은 곧 추가될 예정입니다!", 2000);
+    }
+};
 
 // ========================================================================================
 // 메인 함수
 // ========================================================================================
-int main() {
-    // 콘솔 창 제목 설정
-    SetConsoleTitle(L"Typing Practice Game");
-    GameManager manager;
-    manager.start();
+int wmain() {
+    _setmode(_fileno(stdout), _O_U16TEXT);
+    _setmode(_fileno(stdin), _O_U16TEXT);
+
+    TypingGame game;
+    game.start();
     return 0;
 }
