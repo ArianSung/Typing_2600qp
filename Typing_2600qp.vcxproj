@@ -124,11 +124,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-//<<<<<<< sobin
     <ClCompile Include="menu.cpp" />
-//=======
     <ClCompile Include="Typing_Game_Rain.cpp" />
-//>>>>>>> master
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
