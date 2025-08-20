@@ -18,11 +18,8 @@
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-//<<<<<<< sobin
     <ClCompile Include="menu.cpp">
-//=======
     <ClCompile Include="Typing_Game_Rain.cpp">
-//>>>>>>> master
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
