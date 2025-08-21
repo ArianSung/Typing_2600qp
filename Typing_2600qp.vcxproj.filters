@@ -6,11 +6,13 @@
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="Typing_Game_Rain.cpp" />
     <ClCompile Include="Memory_Game.cpp" />
+    <ClCompile Include="Boss_Game.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AiBattleGame.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="Typing_Game_Rain.h" />
     <ClInclude Include="Memory_Game.h" />
+    <ClInclude Include="Boss_Game.h" />
   </ItemGroup>
 </Project>
