@@ -125,11 +125,13 @@
   <ItemGroup>
     <ClCompile Include="AIBattleGame.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Memory_Game.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="Typing_Game_Rain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AiBattleGame.h" />
+    <ClInclude Include="Memory_Game.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="Typing_Game_Rain.h" />
   </ItemGroup>

@@ -3,6 +3,7 @@
 #include "menu.h"      // 직접 만든 헤더 파일을 포함하여 선언된 내용을 가져옵니다.
 #include "Typing_Game_Rain.h" // 산성비 게임(playTypingGame) 함수를 사용하기 위해 포함합니다.
 #include "AiBattleGame.h"
+#include "Memory_Game.h" // 메모리 게임 클래스를 사용하기 위해 포함합니다.
 
 // 이 소스 파일의 함수 구현에만 필요한 헤더들을 포함합니다.
 #include <conio.h> // _kbhit, _getch
@@ -18,7 +19,8 @@ void UIManager::drawMainMenu() {
     std::cout << "              1. 타자 연습\n";
     std::cout << "              2. 산성비 게임\n";
     std::cout << "              3. 단어 대결\n";
-    std::cout << "              4. 종료\n\n";
+    std::cout << "              4. 메모리 챌린지\n";
+    std::cout << "              5. 종료\n\n";
     std::cout << "========================================\n";
     std::cout << ">> 메뉴를 선택하세요: ";
 }
@@ -44,6 +46,9 @@ void GameManager::run() {
             startAiBattleGame(); // 아직 구현되지 않은 기능
             break;
         case '4':
+            startMemoryChallenge();
+            break;
+        case '5':
             std::cout << "\n게임을 종료합니다.\n";
             return; // run 함수를 종료하여 루프를 빠져나갑니다.
         default:
