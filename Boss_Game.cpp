@@ -1,4 +1,5 @@
 ﻿#include "Boss_Game.h"
+#include "AiBattleGame.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -76,6 +77,7 @@ static void printHpBar(const std::string& name, int current, int max, int barWid
 
 // --- 게임 메인 함수 ---
 void startTypingBossBattle() {
+    setConsoleSize(100, 30);
     showCursor(false); // 게임 시작 시 커서 숨기기
 
     // 1. 단어 목록 불러오기
@@ -237,3 +239,5 @@ game_over:
     showCursor(true); // 게임 종료 시 커서 다시 보이기
     std::this_thread::sleep_for(std::chrono::seconds(3));
 }
+
+
