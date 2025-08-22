@@ -1,4 +1,5 @@
 #include "TypingPractice.h" // 방금 만든 헤더 파일을 포함합니다.
+#include "AiBattleGame.h"
 
 #include <iostream>     // std::wcout 사용을 위해 추가
 #include <string>       // std::wstring 사용을 위해 추가
@@ -66,19 +67,22 @@ namespace Console {
 // --- 외부에 공개된 유일한 함수 ---
 
 void startTypingPractice() {
+    setConsoleSize(110, 20);
     bool isSelecting = true;
     while (isSelecting) {
         Console::clearScreen();
         Console::setColor(COLOR_DEFAULT);
         Console::showCursor();
-        std::wcout << L"==========================\n"
-            << L"===   타자 연습 모드   ===\n"
-            << L"==========================\n"
-            << L"  1. 단어 연습\n"
-            << L"  2. 긴 글 연습\n"
-            << L"  3. 이전 메뉴로 돌아가기\n"
-            << L"--------------------------\n"
-            << L"모드를 선택하세요: ";
+        std::wcout << L"========================================\n"
+                   << L"===           타자 연습 모드         ===\n"
+                   << L"========================================\n"
+                   << L"                                        \n"   
+                   << L"           1. 단어 연습\n"
+                   << L"           2. 긴 글 연습\n"
+                   << L"           3. 이전 메뉴로 돌아가기\n"
+                   << L"                                        \n"
+                   << L"========================================\n"
+                   << L"모드를 선택하세요: ";
 
         wchar_t choice = _getwch();
         switch (choice) {
@@ -174,7 +178,6 @@ static void runPracticeSession(const std::wstring& filename, const std::wstring&
             }
             Sleep(50);
         }
-
         totalRounds++;
         if (userInput == text) {
             correctRounds++;
