@@ -97,7 +97,7 @@ void startTypingPractice() {
     system("cls");
     std::cout << "****************************************\n";
     std::cout << "* *\n";
-    std::cout << "* << 타자 연습 게임 시작 >>       *\n";
+    std::cout << "*        << 타자 연습 게임 시작 >>       *\n";
     std::cout << "* (이곳에 타자 연습 게임 코드가 들어갑니다)  *\n";
     std::cout << "* *\n";
     std::cout << "****************************************\n\n";
@@ -108,9 +108,9 @@ void startTypingPractice() {
 void startRainGame() {
     system("cls");
     std::cout << "****************************************\n";
-    std::cout << "* *\n";
-    std::cout << "* << 산성비 게임 시작 >>        *\n";
-    std::cout << "* *\n";
+    std::cout << "* \n";
+    std::cout << "*         << 산성비 게임 시작 >>        *\n";
+    std::cout << "* \n";
     std::cout << "****************************************\n\n";
     Sleep(1500); // 1.5초 후 게임 시작
 

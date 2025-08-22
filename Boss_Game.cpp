@@ -1,5 +1,6 @@
 ﻿#include "Boss_Game.h"
 #include "AiBattleGame.h"
+#include "menu.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -198,7 +199,7 @@ void startTypingBossBattle() {
             // 키 입력 처리 (Windows 전용 비동기 방식)
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '\r' || ch == '\n') { // Enter 키
+                if (ch == '\r' || ch == '\n' || ch == ' ') { // Enter 키, space 키
                     if (userInput == currentWord) {
                         currentBoss.currentHp -= 10; // 현재 HP를 감소시킴
                         successfulAttacks++;
@@ -220,6 +221,9 @@ void startTypingBossBattle() {
                 else if (isprint(ch)) { // 일반 문자
                     userInput += ch;
                 }
+                else if (ch == 27) {
+                    goto game_over;
+                }
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
@@ -235,6 +239,7 @@ void startTypingBossBattle() {
     std::cout << "\n\n모든 보스를 물리쳤습니다! 당신은 타자의 신입니다!\n\n";
 
 game_over:
+    displayGameOverScreen();
     std::cout << "\n타자 보스전이 종료되었습니다. 잠시 후 메뉴로 돌아갑니다." << std::endl;
     showCursor(true); // 게임 종료 시 커서 다시 보이기
     std::this_thread::sleep_for(std::chrono::seconds(3));
