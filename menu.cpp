@@ -36,7 +36,7 @@ void UIManager::drawGameMenu() {
     std::wcout << L"==             GAME MENU              ==\n";
     std::wcout << L"========================================\n\n";
     std::wcout << L"            1. 산성비 게임\n";
-    std::wcout << L"            2. 단어 대결\n";
+    std::wcout << L"            2. AI 단어 대결\n";
     std::wcout << L"            3. 메모리 챌린지\n";
     std::wcout << L"            4. 보스를 잡아라\n";
     std::wcout << L"            5. 메인메뉴로 돌아가기\n\n";
@@ -157,7 +157,7 @@ void startAiBattleGame_Menu() {
     system("cls");
     std::wcout << L"****************************************\n";
     std::wcout << L"*                                      *\n";
-    std::wcout << L"*            << 단어 대결 >>           *\n";
+    std::wcout << L"*           << AI단어 대결 >>          *\n";
     std::wcout << L"*                                      *\n";
     std::wcout << L"****************************************\n\n";
     Sleep(1500); // 1.5초 후 게임 시작

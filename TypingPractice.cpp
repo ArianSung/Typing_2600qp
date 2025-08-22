@@ -1,4 +1,5 @@
 #include "TypingPractice.h" // 방금 만든 헤더 파일을 포함합니다.
+#include "AiBattleGame.h"
 
 #include <iostream>     // std::wcout 사용을 위해 추가
 #include <string>       // std::wstring 사용을 위해 추가
@@ -66,6 +67,7 @@ namespace Console {
 // --- 외부에 공개된 유일한 함수 ---
 
 void startTypingPractice() {
+    setConsoleSize(110, 20);
     bool isSelecting = true;
     while (isSelecting) {
         Console::clearScreen();

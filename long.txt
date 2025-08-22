@@ -1,0 +1,46 @@
+#include <iostream> int main() { std::cout << "Hello, World!" << std::endl; return 0; }
+int sum = 0; for (int i = 1; i <= 100; i++) { sum += i; }
+std::cout << "The sum of 1 to 100 is: " << sum << std::endl;
+void printNumbers(int count) { for (int i = 0; i < count; i++) { std::cout << i << " "; } }
+if (x > 100 && y < 50) { std::cout << "Condition met." << std::endl; }
+else { std::cout << "Condition not met." << std::endl; }
+double average(double a, double b) { return (a + b) / 2.0; }
+std::string greeting = "Hello"; std::string name = "User";
+std::string message = greeting + ", " + name + "!"; std::cout << message << std::endl;
+int arr[] = {1, 2, 3, 4, 5}; int total = 0;
+for (int i : arr) { total += i; } std::cout << "Total: " << total << std::endl;
+while (true) { std::cout << "Looping forever..." << std::endl; if (shouldBreak) break; }
+class Car { public: std::string brand; }; Car myCar; myCar.brand = "Ford";
+void swap(int& x, int& y) { int temp = x; x = y; y = temp; }
+bool isEven(int n) { return n % 2 == 0; }
+int factorial(int n) { if (n <= 1) return 1; return n * factorial(n - 1); }
+std::vector<int> numbers; numbers.push_back(10); numbers.push_back(20);
+std::map<std::string, int> ages; ages["Alice"] = 25; ages["Bob"] = 30;
+void doSomething(int value) { try { if (value < 0) throw "Negative value"; }
+catch (const char* msg) { std::cerr << msg << std::endl; } }
+std::unique_ptr<int> ptr = std::make_unique<int>(42); std::cout << *ptr << std::endl;
+std::thread t1(function_to_run); t1.join();
+std::string str = "Hello"; std::reverse(str.begin(), str.end());
+int x = 5; int y = 10; std::swap(x, y); std::cout << "x: " << x << ", y: " << y << std::endl;
+std::stringstream ss; ss << "The answer is " << 42;
+std::string s = ss.str(); std::cout << s << std::endl;
+#include <string> using namespace std;
+string reverseString(string str) { reverse(str.begin(), str.end()); return str; }
+class Rectangle { private: int width, height; public: Rectangle(int w, int h) : width(w), height(h) {}
+int getArea() { return width * height; } };
+double calculateAverage(const vector<int>& numbers) { int sum = 0;
+for (int num : numbers) { sum += num; } return static_cast<double>(sum) / numbers.size(); }
+void bubbleSort(vector<int>& vec) { int n = vec.size(); for (int i = 0; i < n - 1; ++i)
+{ for (int j = 0; j < n - i - 1; ++j) { if (vec[j] > vec[j + 1]) { swap(vec[j], vec[j + 1]); } } } }
+std::unique_ptr<int> createPointer(int value) { return std::make_unique<int>(value); }
+void processData(int data) { if (data > 0) { std::cout << "Processing positive data." << std::endl; }
+else if (data < 0) { std::cout << "Processing negative data." << std::endl; }
+else { std::cout << "Data is zero." << std::endl; } }
+template <typename T> T add(T a, T b) { return a + b; }
+void countAndPrint(int start, int end)
+{ for (int i = start; i <= end; ++i) { std::cout << i << " "; } }
+void processVector(const std::vector<int>& vec)
+{ if (vec.empty()) { throw std::runtime_error("Vector is empty."); } }
+std::pair<int, int> findMinMax(const std::vector<int>& data)
+{ int minVal = data[0], maxVal = data[0]; for (int val : data)
+{ if (val < minVal) minVal = val; if (val > maxVal) maxVal = val; } return {minVal, maxVal}; }
