@@ -124,7 +124,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="TypingPT.cpp" />
+    <ClCompile Include="TypingPractice.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TypingPractice.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
