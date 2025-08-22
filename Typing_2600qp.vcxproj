@@ -123,11 +123,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AIBattleGame.cpp" />
+    <ClCompile Include="Boss_Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TypingPractice.cpp" />
+    <ClCompile Include="Memory_Game.cpp" />
+    <ClCompile Include="menu.cpp" />
+    <ClCompile Include="Typing_Game_Rain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TypingPractice.h" />
+    <ClInclude Include="AiBattleGame.h" />
+    <ClInclude Include="Boss_Game.h" />
+    <ClInclude Include="Memory_Game.h" />
+    <ClInclude Include="menu.h" />
+    <ClInclude Include="Typing_Game_Rain.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
