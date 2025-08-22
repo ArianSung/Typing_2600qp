@@ -5,34 +5,59 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <chrono>
 #include <thread>
 #include <random>
 #include <algorithm>
 #include <cstdlib>
-#include <cctype> // isprint 함수를 사용하기 위해 추가
+#include <cwctype> // [수정] isprint -> iswprint
 
-// Windows/Linux 호환을 위한 헤더 및 함수
 #ifdef _WIN32
 #include <conio.h>
 #include <windows.h>
 #else
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
+// ... (비-Windows 코드는 생략)
 #endif
+
+// [추가] UTF-8 변환 및 파일 로딩 헬퍼 함수
+static std::wstring utf8_to_wstring_boss(const std::string& str) {
+    if (str.empty()) return std::wstring();
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+    std::wstring wstrTo(size_needed, 0);
+    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+    return wstrTo;
+}
+
+static std::vector<std::wstring> loadWordsToWstring_boss(const std::string& filename) {
+    std::vector<std::wstring> content;
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open()) return content;
+    std::string file_contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+    if (file_contents.size() >= 3 && (unsigned char)file_contents[0] == 0xEF && (unsigned char)file_contents[1] == 0xBB && (unsigned char)file_contents[2] == 0xBF) {
+        file_contents = file_contents.substr(3);
+    }
+    std::wstring w_contents = utf8_to_wstring_boss(file_contents);
+    std::wstringstream wss(w_contents);
+    std::wstring line;
+    while (std::getline(wss, line)) {
+        if (!line.empty() && line.back() == L'\r') line.pop_back();
+        if (!line.empty()) content.push_back(line);
+    }
+    return content;
+}
+
 
 // --- 게임 데이터 구조 ---
 struct Boss {
     int maxHp;
-    int currentHp; // 현재 HP를 추적하기 위한 변수
+    int currentHp;
     int attackPower;
-    std::vector<std::string> art;
+    std::vector<std::wstring> art; // [수정] string -> wstring
 };
 
 // --- 헬퍼 함수 ---
-
-// 콘솔 커서 숨기기/보이기 함수 (깜빡임 제거용)
 static void showCursor(bool show) {
 #ifdef _WIN32
     HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -45,8 +70,7 @@ static void showCursor(bool show) {
 #endif
 }
 
-// 콘솔 커서 위치를 이동시키는 함수 (깜빡임 방지용)
-static void gotoxy(int x, int y) {
+static void gotoxy_boss(int x, int y) { // 이름 충돌 방지를 위해 gotoxy_boss로 변경
 #ifdef _WIN32
     COORD pos = { (SHORT)x, (SHORT)y };
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
@@ -56,91 +80,73 @@ static void gotoxy(int x, int y) {
 }
 
 static void clearTypingScreen() {
-#ifdef _WIN32
     system("cls");
-#else
-    system("clear");
-#endif
 }
 
-static void printHpBar(const std::string& name, int current, int max, int barWidth = 20) {
-    std::cout << name << " HP: [";
+// [수정] wcout 사용
+static void printHpBar(const std::wstring& name, int current, int max, int barWidth = 20) {
+    std::wcout << name << L" HP: [";
     float hpRatio = (current > 0) ? static_cast<float>(current) / max : 0;
     int filledWidth = static_cast<int>(barWidth * hpRatio);
 
     for (int i = 0; i < barWidth; ++i) {
-        if (i < filledWidth) std::cout << "■";
-        else std::cout << " ";
+        if (i < filledWidth) std::wcout << L"■";
+        else std::wcout << L" ";
     }
-    // 라인의 나머지 부분을 공백으로 채워 이전 출력을 지웁니다.
-    std::cout << "] " << current << "/" << max << "        ";
+    std::wcout << L"] " << current << L"/" << max << L"        ";
 }
 
 // --- 게임 메인 함수 ---
 void startTypingBossBattle() {
     setConsoleSize(100, 30);
-    showCursor(false); // 게임 시작 시 커서 숨기기
+    showCursor(false);
 
-    // 1. 단어 목록 불러오기
-    std::vector<std::string> allWords;
-    std::ifstream file("words.txt");
-    if (!file.is_open()) {
-        std::cerr << "\n오류: words.txt 파일을 열 수 없습니다." << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        showCursor(true); // 함수 종료 전 커서 보이기
-        return;
-    }
-    std::string word;
-    while (file >> word) allWords.push_back(word);
-    file.close();
+    // [수정] 유니코드 파일 로딩
+    std::vector<std::wstring> allWords = loadWordsToWstring_boss("words.txt");
     if (allWords.empty()) {
-        std::cerr << "\n오류: words.txt 파일에 단어가 없습니다." << std::endl;
+        std::wcerr << L"\n오류: words.txt 파일을 열 수 없거나 내용이 비어있습니다." << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(3));
-        showCursor(true); // 함수 종료 전 커서 보이기
+        showCursor(true);
         return;
     }
 
-    // 2. 10단계 보스 데이터 설정
+    // [수정] 보스 아트를 L"..." 로 변경
     std::vector<Boss> stages(10);
-    stages[0] = { 100, 0, 1, {"       (o.o)       ", "      /|   |\\      ", "       /   \\      "} };
-    stages[1] = { 120, 0, 1, {"       (Ò.Ó)       ", "      /|]--[|\\      ", "       /   \\      "} };
-    stages[2] = { 150, 0, 2, {"      <(ÒwÓ)>      ", "      /| | | |\\      ", "       /    \\      "} };
-    stages[3] = { 200, 0, 2, {"     --{ÒwÓ}--     ", "      /| | | |\\      ", "      O-- --O      "} };
-    stages[4] = { 250, 0, 3, {"    \\|/(ÒДÓ)\\|/    ", "      /| | | |\\      ", "       /\\ /\\       "} };
-    stages[5] = { 300, 0, 3, {"  <(((Ò(エ)Ó)))>  ", "      /| | | |\\      ", "      <|   |>      "} };
-    stages[6] = { 380, 0, 4, {"  ( ( (Ò益Ó) ) )  ", "   ((--/| | | |\\--))   ", "      <</ \\>>      "} };
-    stages[7] = { 450, 0, 5, {"  (##(Ò益Ó)##)  ", "   ((--/| | | |\\--))   ", "     ##/   \\##     "} };
-    stages[8] = { 550, 0, 6, {" /MM\\ (Ò益Ó) /MM\\ ", " M ((--/| | | |\\--)) M ", "     ##/   \\##     "} };
-    stages[9] = { 700, 0, 7, {"/|================|\\", "| | ((Ò益Ó)) | |", "| |/----\\| |", "\\| | | |/", " VVV VVV "} };
+    stages[0] = { 100, 0, 1, {L"       (o.o)       ", L"      /|   |\\      ", L"       /   \\      "} };
+    stages[1] = { 120, 0, 1, {L"       (Ò.Ó)       ", L"      /|]--[|\\      ", L"       /   \\      "} };
+    stages[2] = { 150, 0, 2, {L"      <(ÒwÓ)>      ", L"      /| | | |\\      ", L"       /    \\      "} };
+    stages[3] = { 200, 0, 2, {L"     --{ÒwÓ}--     ", L"      /| | | |\\      ", L"      O-- --O      "} };
+    stages[4] = { 250, 0, 3, {L"    \\|/(ÒДÓ)\\|/    ", L"      /| | | |\\      ", L"       /\\ /\\       "} };
+    stages[5] = { 300, 0, 3, {L"  <(((Ò(エ)Ó)))>  ", L"      /| | | |\\      ", L"      <|   |>      "} };
+    stages[6] = { 380, 0, 4, {L"  ( ( (Ò益Ó) ) )  ", L"   ((--/| | | |\\--))   ", L"      <</ \\>>      "} };
+    stages[7] = { 450, 0, 5, {L"  (##(Ò益Ó)##)  ", L"   ((--/| | | |\\--))   ", L"     ##/   \\##     "} };
+    stages[8] = { 550, 0, 6, {L" /MM\\ (Ò益Ó) /MM\\ ", L" M ((--/| | | |\\--)) M ", L"     ##/   \\##     "} };
+    stages[9] = { 700, 0, 7, {L"/|================|\\", L"| | ((Ò益Ó)) | |", L"| |/----\\| |", L"\\| | | |/", L" VVV VVV "} };
 
-    // 플레이어 HP를 스테이지 루프 밖에서 초기화합니다.
     int playerMaxHp = 10;
     int playerCurrentHp = playerMaxHp;
 
-    // 3. 게임 루프 시작 (스테이지별)
     for (int stage = 0; stage < 10; ++stage) {
-        // 현재 스테이지 게임 변수 설정
         Boss currentBoss = stages[stage];
-        currentBoss.currentHp = currentBoss.maxHp; // 현재 HP 초기화
+        currentBoss.currentHp = currentBoss.maxHp;
         int successfulAttacks = 0;
 
         auto lastBossAttackTime = std::chrono::steady_clock::now();
-        std::string currentWord;
-        std::string userInput = "";
+        std::wstring currentWord; // [수정] string -> wstring
+        std::wstring userInput = L""; // [수정] string -> wstring
 
         std::random_device rd;
         std::mt19937 g(rd());
         std::shuffle(allWords.begin(), allWords.end(), g);
         currentWord = allWords[0];
 
-        // --- 초기 화면 그리기 ---
         clearTypingScreen();
-        std::cout << "========================= STAGE " << stage + 1 << " =========================" << std::endl;
-        std::cout << "\n";
+        std::wcout << L"========================= STAGE " << stage + 1 << L" =========================" << std::endl;
+        std::wcout << L"\n";
         int art_start_y = 2;
         for (const auto& line : currentBoss.art) {
-            gotoxy(0, art_start_y++);
-            std::cout << line << std::endl;
+            gotoxy_boss(0, art_start_y++);
+            std::wcout << line << std::endl;
         }
 
         const int BOSS_HP_Y = art_start_y + 2;
@@ -151,74 +157,70 @@ void startTypingBossBattle() {
         const int INPUT_Y = WORD_Y + 2;
         const int MESSAGE_Y = INPUT_Y + 2;
 
-        gotoxy(0, DIVIDER_Y);
-        std::cout << "-----------------------------------------------------------";
-        gotoxy(0, WORD_Y);
-        std::cout << ">> " << currentWord << " <<";
+        gotoxy_boss(0, DIVIDER_Y);
+        std::wcout << L"-----------------------------------------------------------";
+        gotoxy_boss(0, WORD_Y);
+        std::wcout << L">> " << currentWord << L" <<";
+        gotoxy_boss(0, INPUT_Y);
+        std::wcout << L"입력: ";
 
-        // 4. 전투 루프 시작 (현재 스테이지)
         while (true) {
             auto currentTime = std::chrono::steady_clock::now();
             float bossAttackTimer = std::chrono::duration_cast<std::chrono::duration<float>>(currentTime - lastBossAttackTime).count();
 
-            // --- UI 업데이트 (깜빡임 최소화) ---
-            gotoxy(0, BOSS_HP_Y);
-            printHpBar("BOSS  ", currentBoss.currentHp, currentBoss.maxHp, 40);
-            gotoxy(0, PLAYER_HP_Y);
-            printHpBar("PLAYER", playerCurrentHp, playerMaxHp, 40);
-            gotoxy(0, TIMER_Y);
-            std::cout << "보스 공격까지: " << 10 - static_cast<int>(bossAttackTimer) << "초 (성공횟수: " << successfulAttacks << "/4)      ";
-            gotoxy(7, INPUT_Y); // "입력: " 뒤로 커서 이동
-            std::cout << userInput << " "; // 이전 글자 지우기용 공백
+            gotoxy_boss(0, BOSS_HP_Y);
+            printHpBar(L"BOSS  ", currentBoss.currentHp, currentBoss.maxHp, 40);
+            gotoxy_boss(0, PLAYER_HP_Y);
+            printHpBar(L"PLAYER", playerCurrentHp, playerMaxHp, 40);
+            gotoxy_boss(0, TIMER_Y);
+            std::wcout << L"보스 공격까지: " << 10 - static_cast<int>(bossAttackTimer) << L"초 (성공횟수: " << successfulAttacks << L"/4)      ";
+            gotoxy_boss(7, INPUT_Y);
+            std::wcout << userInput << L" ";
 
-            // 보스 공격 처리
             if (bossAttackTimer >= 10.0f) {
                 if (successfulAttacks < 4) {
                     playerCurrentHp -= currentBoss.attackPower;
-                    gotoxy(0, MESSAGE_Y);
-                    std::cout << "보스의 공격! " << currentBoss.attackPower << "의 데미지를 입었습니다!        ";
+                    gotoxy_boss(0, MESSAGE_Y);
+                    std::wcout << L"보스의 공격! " << currentBoss.attackPower << L"의 데미지를 입었습니다!        ";
                 }
                 else {
-                    gotoxy(0, MESSAGE_Y);
-                    std::cout << "보스의 공격을 막아냈습니다!                      ";
+                    gotoxy_boss(0, MESSAGE_Y);
+                    std::wcout << L"보스의 공격을 막아냈습니다!                      ";
                 }
                 successfulAttacks = 0;
                 lastBossAttackTime = std::chrono::steady_clock::now();
                 std::this_thread::sleep_for(std::chrono::seconds(1));
-                gotoxy(0, MESSAGE_Y);
-                std::cout << "                                                  "; // 메시지 지우기
+                gotoxy_boss(0, MESSAGE_Y);
+                std::wcout << L"                                                  ";
             }
 
-            // 게임 오버 조건 확인
             if (playerCurrentHp <= 0) {
                 clearTypingScreen();
-                std::cout << "\n\n패배했습니다...\n\n";
+                std::wcout << L"\n\n패배했습니다...\n\n";
                 goto game_over;
             }
 
-            // 키 입력 처리 (Windows 전용 비동기 방식)
             if (_kbhit()) {
-                char ch = _getch();
-                if (ch == '\r' || ch == '\n' || ch == ' ') { // Enter 키, space 키
+                wchar_t ch = _getwch(); // [수정] _getch -> _getwch
+                if (ch == L'\r' || ch == L'\n' || ch == L' ') {
                     if (userInput == currentWord) {
-                        currentBoss.currentHp -= 10; // 현재 HP를 감소시킴
+                        currentBoss.currentHp -= 10;
                         successfulAttacks++;
-                        if (currentBoss.currentHp <= 0) break; // 보스 처치
+                        if (currentBoss.currentHp <= 0) break;
 
                         std::shuffle(allWords.begin(), allWords.end(), g);
                         currentWord = allWords[0];
-                        gotoxy(0, WORD_Y);
-                        std::cout << ">> " << currentWord << " <<" << "                    ";
+                        gotoxy_boss(0, WORD_Y);
+                        std::wcout << L">> " << currentWord << L" <<" << L"                    ";
                     }
-                    // 입력창을 깨끗하게 비웁니다.
-                    gotoxy(7, INPUT_Y);
-                    std::cout << "                                        ";
-                    userInput = "";
+                    gotoxy_boss(7, INPUT_Y);
+                    std::wcout << std::wstring(userInput.length() + 1, L' ');
+                    userInput = L"";
                 }
-                else if (ch == '\b') { // Backspace 키
+                else if (ch == L'\b') {
                     if (!userInput.empty()) userInput.pop_back();
                 }
-                else if (isprint(ch)) { // 일반 문자
+                else if (iswprint(ch)) { // [수정] isprint -> iswprint
                     userInput += ch;
                 }
                 else if (ch == 27) {
@@ -228,21 +230,17 @@ void startTypingBossBattle() {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
-        // 스테이지 클리어
         clearTypingScreen();
-        std::cout << "\n\n축하합니다! STAGE " << stage + 1 << " 클리어!\n\n";
+        std::wcout << L"\n\n축하합니다! STAGE " << stage + 1 << L" 클리어!\n\n";
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 
-    // 모든 스테이지 클리어
     clearTypingScreen();
-    std::cout << "\n\n모든 보스를 물리쳤습니다! 당신은 타자의 신입니다!\n\n";
+    std::wcout << L"\n\n모든 보스를 물리쳤습니다! 당신은 타자의 신입니다!\n\n";
 
 game_over:
     displayGameOverScreen();
-    std::cout << "\n타자 보스전이 종료되었습니다. 잠시 후 메뉴로 돌아갑니다." << std::endl;
-    showCursor(true); // 게임 종료 시 커서 다시 보이기
+    std::wcout << L"\n타자 보스전이 종료되었습니다. 잠시 후 메뉴로 돌아갑니다." << std::endl;
+    showCursor(true);
     std::this_thread::sleep_for(std::chrono::seconds(3));
 }
-
-
