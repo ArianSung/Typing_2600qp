@@ -71,14 +71,14 @@ void startTypingPractice() {
         Console::clearScreen();
         Console::setColor(COLOR_DEFAULT);
         Console::showCursor();
-        std::wcout << L"==========================\n"
-            << L"===   타자 연습 모드   ===\n"
-            << L"==========================\n"
-            << L"  1. 단어 연습\n"
-            << L"  2. 긴 글 연습\n"
-            << L"  3. 이전 메뉴로 돌아가기\n"
-            << L"--------------------------\n"
-            << L"모드를 선택하세요: ";
+        std::wcout << L"========================================\n"
+                   << L"===           타자 연습 모드         ===\n"
+                   << L"========================================\n"
+                   << L"             1. 단어 연습\n"
+                   << L"            2. 긴 글 연습\n"
+                   << L"          3. 이전 메뉴로 돌아가기\n"
+                   << L"========================================\n"
+                   << L"모드를 선택하세요: ";
 
         wchar_t choice = _getwch();
         switch (choice) {
@@ -174,7 +174,6 @@ static void runPracticeSession(const std::wstring& filename, const std::wstring&
             }
             Sleep(50);
         }
-
         totalRounds++;
         if (userInput == text) {
             correctRounds++;

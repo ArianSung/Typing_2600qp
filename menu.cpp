@@ -130,9 +130,9 @@ void displayGameOverScreen() {
 void startTypingPractice_Menu() {
     system("cls");
     std::wcout << L"****************************************\n";
-    std::wcout << L"* *\n";
-    std::wcout << L"* << 타자 연습  >>              *\n";
-    std::wcout << L"* *\n";
+    std::wcout << L"*                                      *\n";
+    std::wcout << L"*           << 타자 연습  >>           *\n";
+    std::wcout << L"*                                      *\n";
     std::wcout << L"****************************************\n\n";
     Sleep(1500);
     startTypingPractice();
@@ -143,9 +143,9 @@ void startTypingPractice_Menu() {
 void startRainGame_Menu() {
     system("cls");
     std::wcout << L"****************************************\n";
-    std::wcout << L"* *\n";
-    std::wcout << L"* << 산성비 게임 >>            *\n";
-    std::wcout << L"* *\n";
+    std::wcout << L"*                                      *\n";
+    std::wcout << L"*          << 산성비 게임 >>           *\n";
+    std::wcout << L"*                                      *\n";
     std::wcout << L"****************************************\n\n";
     Sleep(1500); // 1.5초 후 게임 시작
 
@@ -156,9 +156,9 @@ void startRainGame_Menu() {
 void startAiBattleGame_Menu() {
     system("cls");
     std::wcout << L"****************************************\n";
-    std::wcout << L"* *\n";
-    std::wcout << L"* << 단어 대결 >>              *\n";
-    std::wcout << L"* *\n";
+    std::wcout << L"*                                      *\n";
+    std::wcout << L"*            << 단어 대결 >>           *\n";
+    std::wcout << L"*                                      *\n";
     std::wcout << L"****************************************\n\n";
     Sleep(1500); // 1.5초 후 게임 시작
 
@@ -170,9 +170,9 @@ void startAiBattleGame_Menu() {
 void startMemoryChallenge_Menu() {
     system("cls");
     std::wcout << L"****************************************\n";
-    std::wcout << L"* *\n";
-    std::wcout << L"* << 메모리 챌린지 >>          *\n";
-    std::wcout << L"* *\n";
+    std::wcout << L"*                                      *\n";
+    std::wcout << L"*          << 메모리 챌린지 >>         *\n";
+    std::wcout << L"*                                      *\n";
     std::wcout << L"****************************************\n\n";
     Sleep(1500); // 1.5초 후 게임 시작
 
@@ -184,9 +184,9 @@ void startMemoryChallenge_Menu() {
 void startTypingBossBattle_Menu() {
     system("cls");
     std::wcout << L"****************************************\n";
-    std::wcout << L"* *\n";
-    std::wcout << L"* << 보스를 잡아라 >>          *\n";
-    std::wcout << L"* *\n";
+    std::wcout << L"*                                      *\n";
+    std::wcout << L"*          << 보스를 잡아라 >>         *\n";
+    std::wcout << L"*                                      *\n";
     std::wcout << L"****************************************\n\n";
     Sleep(1500); // 1.5초 후 게임 시작
 
