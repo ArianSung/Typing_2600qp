@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include <windows.h> // COORD, gotoxy_raingame 등을 위해 필요합니다.
-
+//
 // ## 전역 상수 선언 ##
 // 게임 보드의 크기를 상수로 정의합니다.
 #define BOARD_WIDTH 80
