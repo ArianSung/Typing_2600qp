@@ -26,6 +26,7 @@ public:
 class UIManager {
 public:
     void drawMainMenu(); // 함수의 선언
+    void drawGameMenu();
 };
 
 // GameManager 클래스: 게임의 전체적인 흐름을 관리합니다.

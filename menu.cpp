@@ -18,13 +18,27 @@ void UIManager::drawMainMenu() {
     std::cout << "==            TYPING GAME             ==\n";
     std::cout << "========================================\n\n";
     std::cout << "              1. 타자 연습\n";
-    std::cout << "              2. 산성비 게임\n";
-    std::cout << "              3. 단어 대결\n";
-    std::cout << "              4. 메모리 챌린지\n";
-    std::cout << "              5. 보스를 잡아라\n";
-    std::cout << "              6. 종료\n\n";
+    std::cout << "              2. 게임\n";
+    std::cout << "              3. 종료\n\n";
     std::cout << "========================================\n";
     std::cout << ">> 메뉴를 선택하세요: ";
+}
+
+//---------------------------------------------------------
+// 새로운 "게임 서브메뉴" 출력 함수 추가
+//---------------------------------------------------------
+void UIManager::drawGameMenu() {
+    system("cls");
+    std::cout << "========================================\n";
+    std::cout << "==             GAME MENU              ==\n";
+    std::cout << "========================================\n\n";
+    std::cout << "            1. 산성비 게임\n";
+    std::cout << "            2. 단어 대결\n";
+    std::cout << "            3. 메모리 챌린지\n";
+    std::cout << "            4. 보스를 잡아라\n";
+    std::cout << "            5. 메인메뉴로 돌아가기\n\n";
+    std::cout << "========================================\n";
+    std::cout << ">> 게임을 선택하세요: ";
 }
 
 //=========================================================
@@ -36,29 +50,46 @@ void GameManager::run() {
         char choice;
         std::cin >> choice;
 
-        // 사용자의 입력에 따라 다른 게임을 시작합니다.
         switch (choice) {
-        case '1':
+        case '1': // 타자 연습
             startTypingPractice();
             break;
-        case '2':
-            startRainGame_Menu();
+
+        case '2': { // 게임 서브메뉴
+            uiManager.drawGameMenu();
+            char gameChoice;
+            std::cin >> gameChoice;
+            switch (gameChoice) {
+            case '1':
+                startRainGame_Menu();
+                break;
+            case '2':
+                startAiBattleGame_Menu();
+                break;
+            case '3':
+                startMemoryChallenge_Menu();
+                break;
+            case '4':
+                startTypingBossBattle_Menu();
+                break;
+            case '5': // 서브 메뉴 종료 -> 메인 메뉴 복귀
+                break;
+                //goto BACK_TO_MAIN;
+            default:
+                std::cout << "\n>> 잘못된 입력입니다. 다시 선택해주세요.\n";
+                system("pause");
+                break;
+            }
             break;
-        case '3':
-            startAiBattleGame_Menu();
-            break;
-        case '4':
-            startMemoryChallenge_Menu();
-            break;
-		case '5':
-            startTypingBossBattle_Menu();
-			break;
-        case '6':
+            
+        }
+        case '3': // 종료
             std::cout << "\n게임을 종료합니다.\n";
-            return; // run 함수를 종료하여 루프를 빠져나갑니다.
+            return;
+
         default:
             std::cout << "\n>> 잘못된 입력입니다. 다시 선택해주세요.\n";
-            system("pause"); // 사용자가 키를 누를 때까지 잠시 대기
+            system("pause");
             break;
         }
     }
