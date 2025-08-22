@@ -5,6 +5,7 @@
 #include "AiBattleGame.h"
 #include "Memory_Game.h" // 메모리 게임 클래스를 사용하기 위해 포함합니다.
 #include "Boss_Game.h" // 보스 게임 클래스를 사용하기 위해 포함합니다.
+#include "TypingPractice.h"
 
 // 이 소스 파일의 함수 구현에만 필요한 헤더들을 포함합니다.
 #include <conio.h> // _kbhit, _getch
@@ -52,9 +53,8 @@ void GameManager::run() {
 
         switch (choice) {
         case '1': // 타자 연습
-            startTypingPractice();
+            startTypingPractice_Menu();
             break;
-
         case '2': { // 게임 서브메뉴
             uiManager.drawGameMenu();
             char gameChoice;
@@ -124,14 +124,15 @@ void displayGameOverScreen() {
 }
 
 // 타자 연습 게임 함수 (현재는 자리만 마련)
-void startTypingPractice() {
+void startTypingPractice_Menu() {
     system("cls");
     std::cout << "****************************************\n";
-    std::cout << "*                                         *\n";
-    std::cout << "*        << 타자 연습  >>                  *\n";
-    std::cout << "* (이곳에 타자 연습 게임 코드가 들어갑니다)  *\n";
-    std::cout << "*                                         *\n";
+    std::cout << "*                                      *\n";
+    std::cout << "*        << 타자 연습  >>              *\n";
+    std::cout << "*                                      *\n";
     std::cout << "****************************************\n\n";
+    Sleep(1500);
+    startTypingPractice();
     system("pause");
 }
 

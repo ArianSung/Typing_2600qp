@@ -43,7 +43,7 @@ public:
 // 전역 함수 선언
 //=========================================================
 
-void startTypingPractice();
+void startTypingPractice_Menu();
 void startRainGame_Menu();
 void displayWinScreen();
 void displayGameOverScreen();
