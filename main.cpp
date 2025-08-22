@@ -1,18 +1,21 @@
-#include <iostream>
-#include <string>
-#include <io.h>
-#include <fcntl.h>
-#include <cstdio>
-#include "menu.h"
+// 파일: main.cpp
+// 설명: 프로그램의 진입점(Entry Point)입니다. 
+//      프로그램이 시작되면 이 파일의 main 함수가 가장 먼저 실행됩니다.
+//      주요 역할은 메뉴 객체를 생성하고, 메인 메뉴를 화면에 표시하여 
+//      사용자와의 상호작용을 시작하는 것입니다.
 
-//=========================================================
-// main 함수: 프로그램 시작점
-//=========================================================
+#include "menu.h" // 메뉴 관련 기능이 정의된 menu.h 헤더 파일을 포함합니다.
+
+// 프로그램의 시작을 담당하는 main 함수입니다.
 int main() {
-    _setmode(_fileno(stdout), _O_U16TEXT);
-    _setmode(_fileno(stdin), _O_U16TEXT);
-    SetConsoleTitle(L"Typing Battle Game");
-    GameManager game;
-    game.run();
+    // Menu 클래스의 인스턴스(객체)를 생성합니다.
+    // 이 'menu' 객체를 통해 메뉴 관련 기능들을 사용할 수 있게 됩니다.
+    Menu menu;
+
+    // menu 객체의 mainMenu 함수를 호출하여 사용자에게 메인 메뉴를 보여줍니다.
+    // 이 함수가 호출되면 프로그램의 본격적인 상호작용이 시작됩니다.
+    menu.mainMenu();
+
+    // 프로그램이 정상적으로 종료되었음을 운영체제에 알리기 위해 0을 반환합니다.
     return 0;
 }
