@@ -18,13 +18,27 @@ void UIManager::drawMainMenu() {
     std::cout << "==            TYPING GAME             ==\n";
     std::cout << "========================================\n\n";
     std::cout << "              1. 타자 연습\n";
-    std::cout << "              2. 산성비 게임\n";
-    std::cout << "              3. 단어 대결\n";
-    std::cout << "              4. 메모리 챌린지\n";
-    std::cout << "              5. 보스를 잡아라\n";
-    std::cout << "              6. 종료\n\n";
+    std::cout << "              2. 게임\n";
+    std::cout << "              3. 종료\n\n";
     std::cout << "========================================\n";
     std::cout << ">> 메뉴를 선택하세요: ";
+}
+
+//---------------------------------------------------------
+// 새로운 "게임 서브메뉴" 출력 함수 추가
+//---------------------------------------------------------
+void UIManager::drawGameMenu() {
+    system("cls");
+    std::cout << "========================================\n";
+    std::cout << "==             GAME MENU              ==\n";
+    std::cout << "========================================\n\n";
+    std::cout << "            1. 산성비 게임\n";
+    std::cout << "            2. 단어 대결\n";
+    std::cout << "            3. 메모리 챌린지\n";
+    std::cout << "            4. 보스를 잡아라\n";
+    std::cout << "            5. 메인메뉴로 돌아가기\n\n";
+    std::cout << "========================================\n";
+    std::cout << ">> 게임을 선택하세요: ";
 }
 
 //=========================================================
@@ -36,29 +50,46 @@ void GameManager::run() {
         char choice;
         std::cin >> choice;
 
-        // 사용자의 입력에 따라 다른 게임을 시작합니다.
         switch (choice) {
-        case '1':
+        case '1': // 타자 연습
             startTypingPractice();
             break;
-        case '2':
-            startRainGame();
+
+        case '2': { // 게임 서브메뉴
+            uiManager.drawGameMenu();
+            char gameChoice;
+            std::cin >> gameChoice;
+            switch (gameChoice) {
+            case '1':
+                startRainGame_Menu();
+                break;
+            case '2':
+                startAiBattleGame_Menu();
+                break;
+            case '3':
+                startMemoryChallenge_Menu();
+                break;
+            case '4':
+                startTypingBossBattle_Menu();
+                break;
+            case '5': // 서브 메뉴 종료 -> 메인 메뉴 복귀
+                break;
+                //goto BACK_TO_MAIN;
+            default:
+                std::cout << "\n>> 잘못된 입력입니다. 다시 선택해주세요.\n";
+                system("pause");
+                break;
+            }
             break;
-        case '3':
-            startAiBattleGame(); // 아직 구현되지 않은 기능
-            break;
-        case '4':
-            startMemoryChallenge();
-            break;
-		case '5':
-            startTypingBossBattle();
-			break;
-        case '6':
+            
+        }
+        case '3': // 종료
             std::cout << "\n게임을 종료합니다.\n";
-            return; // run 함수를 종료하여 루프를 빠져나갑니다.
+            return;
+
         default:
             std::cout << "\n>> 잘못된 입력입니다. 다시 선택해주세요.\n";
-            system("pause"); // 사용자가 키를 누를 때까지 잠시 대기
+            system("pause");
             break;
         }
     }
@@ -85,9 +116,9 @@ void displayWinScreen() {
  */
 void displayGameOverScreen() {
     std::cout << "\n\n\n";
-    std::cout << "    $$$$$$$     $$$$$   $$$    $$$ $$$$$$$$       $$$$$$  $$$    $$$ $$$$$$$$ $$$$$$$ \n";
+    std::cout << "     $$$$$$$    $$$$$   $$$    $$$ $$$$$$$$       $$$$$$  $$$    $$$ $$$$$$$$ $$$$$$$ \n";
     std::cout << "    $$$       $$$   $$$ $$$$$$$$$$ $$$           $$$  $$$ $$$    $$$ $$$      $$$   $$$\n";
-    std::cout << "    $$$  $$$$ $$$$$$$$$ $$$ $$ $$$ $$$$$$$       $$$  $$$ $$$    $$$ $$$$$$$  $$$$$$ \n";
+    std::cout << "    $$$  $$$$ $$$$$$$$$ $$$ $$ $$$ $$$$$$$       $$$  $$$ $$$    $$$ $$$$$$$  $$$$$$$ \n";
     std::cout << "    $$$   $$$ $$$   $$$ $$$    $$$ $$$           $$$  $$$  $$$  $$$  $$$      $$$   $$$\n";
     std::cout << "     $$$$$$$  $$$   $$$ $$$    $$$ $$$$$$$$       $$$$$$    $$$$$$   $$$$$$$$ $$$   $$$\n";
 }
@@ -96,26 +127,73 @@ void displayGameOverScreen() {
 void startTypingPractice() {
     system("cls");
     std::cout << "****************************************\n";
-    std::cout << "* *\n";
-    std::cout << "* << 타자 연습 게임 시작 >>       *\n";
+    std::cout << "*                                         *\n";
+    std::cout << "*        << 타자 연습  >>                  *\n";
     std::cout << "* (이곳에 타자 연습 게임 코드가 들어갑니다)  *\n";
-    std::cout << "* *\n";
+    std::cout << "*                                         *\n";
     std::cout << "****************************************\n\n";
     system("pause");
 }
 
 // 산성비 게임 시작 함수
-void startRainGame() {
+void startRainGame_Menu() {
     system("cls");
     std::cout << "****************************************\n";
-    std::cout << "* *\n";
-    std::cout << "* << 산성비 게임 시작 >>        *\n";
-    std::cout << "* *\n";
+    std::cout << "*                                      *\n";
+    std::cout << "*         << 산성비 게임 >>            *\n";
+    std::cout << "*                                      *\n";
     std::cout << "****************************************\n\n";
     Sleep(1500); // 1.5초 후 게임 시작
 
     // 이전에 만든 산성비 게임 함수를 호출합니다.
-    playTypingGame();
+    startRainGame();
+
+    // 게임이 끝나면 잠시 대기 후 메뉴로 돌아갑니다.
+    system("pause");
+}
+void startAiBattleGame_Menu() {
+    system("cls");
+    std::cout << "****************************************\n";
+    std::cout << "*                                      *\n";
+    std::cout << "*         << 단어 대결 >>              *\n";
+    std::cout << "*                                      *\n";
+    std::cout << "****************************************\n\n";
+    Sleep(1500); // 1.5초 후 게임 시작
+
+    // 이전에 만든 산성비 게임 함수를 호출합니다.
+    startAiBattleGame();
+
+    // 게임이 끝나면 잠시 대기 후 메뉴로 돌아갑니다.
+    system("pause");
+}
+
+void startMemoryChallenge_Menu() {
+    system("cls");
+    std::cout << "****************************************\n";
+    std::cout << "*                                      *\n";
+    std::cout << "*         << 메모리 챌린지 >>          *\n";
+    std::cout << "*                                      *\n";
+    std::cout << "****************************************\n\n";
+    Sleep(1500); // 1.5초 후 게임 시작
+
+    // 이전에 만든 산성비 게임 함수를 호출합니다.
+    startMemoryChallenge();
+
+    // 게임이 끝나면 잠시 대기 후 메뉴로 돌아갑니다.
+    system("pause");
+}
+
+void startTypingBossBattle_Menu() {
+    system("cls");
+    std::cout << "****************************************\n";
+    std::cout << "*                                      *\n";
+    std::cout << "*         << 보스를 잡아라 >>          *\n";
+    std::cout << "*                                      *\n";
+    std::cout << "****************************************\n\n";
+    Sleep(1500); // 1.5초 후 게임 시작
+
+    // 이전에 만든 산성비 게임 함수를 호출합니다.
+    startTypingBossBattle();
 
     // 게임이 끝나면 잠시 대기 후 메뉴로 돌아갑니다.
     system("pause");

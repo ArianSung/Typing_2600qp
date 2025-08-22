@@ -26,6 +26,7 @@ public:
 class UIManager {
 public:
     void drawMainMenu(); // 함수의 선언
+    void drawGameMenu();
 };
 
 // GameManager 클래스: 게임의 전체적인 흐름을 관리합니다.
@@ -43,7 +44,9 @@ public:
 //=========================================================
 
 void startTypingPractice();
-void startRainGame();
+void startRainGame_Menu();
 void displayWinScreen();
 void displayGameOverScreen();
-void startAiBattleGame();
+void startAiBattleGame_Menu();
+void startMemoryChallenge_Menu();
+void startTypingBossBattle_Menu();

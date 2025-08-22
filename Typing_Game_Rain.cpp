@@ -49,7 +49,7 @@ void loadWordsFromFile(std::vector<std::string>& words, const std::string& filen
 
 // ## 메인 게임 로직 함수 정의 ##
 
-void playTypingGame() {
+void startRainGame() {
     // --- 1. 게임 초기화 ---
     setConsoleSize();
     system("cls");
