@@ -7,8 +7,11 @@
     <ClCompile Include="Typing_Game_Rain.cpp" />
     <ClCompile Include="Memory_Game.cpp" />
     <ClCompile Include="Boss_Game.cpp" />
+    <ClCompile Include="TypingPractice.cpp">
   </ItemGroup>
   <ItemGroup>
+    </ClInclude>
+    <ClInclude Include="TypingPractice.h">
     <ClInclude Include="AiBattleGame.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="Typing_Game_Rain.h" />
