@@ -43,7 +43,9 @@ public:
 //=========================================================
 
 void startTypingPractice();
-void startRainGame();
+void startRainGame_Menu();
 void displayWinScreen();
 void displayGameOverScreen();
-void startAiBattleGame();
+void startAiBattleGame_Menu();
+void startMemoryChallenge_Menu();
+void startTypingBossBattle_Menu();

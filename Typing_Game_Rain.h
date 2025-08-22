@@ -39,4 +39,4 @@ void loadWordsFromFile(std::vector<std::string>& words, const std::string& filen
 /**
  * @brief 메인 타자 게임을 실행합니다.
  */
-void playTypingGame();
+void startRainGame();
