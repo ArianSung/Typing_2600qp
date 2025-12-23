@@ -52,7 +52,10 @@ void gotoxy_raingame(int x, int y) {
 }
 
 void setConsoleSize() {
-    system("mode con cols=80 lines=40");
+    // 콘솔 창 크기 설정 (25줄에 맞춤)
+    system("mode con cols=80 lines=25");
+
+    // 커서 숨기기
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
     cursorInfo.bVisible = FALSE;
@@ -136,7 +139,7 @@ void startRainGame() {
 
                 it->second.Y++;
 
-                if (it->second.Y > BOARD_HEIGHT - 2) {
+                if (it->second.Y > BOARD_HEIGHT - 5) {
                     life--;
                     it = fallingWords.erase(it);
                 }
@@ -149,10 +152,13 @@ void startRainGame() {
             lastUpdateTime = currentTime;
         }
 
+        // UI 영역 (하단 고정)
+        gotoxy_raingame(0, BOARD_HEIGHT - 4);
+        std::wcout << L"════════════════════════════════════════════════════════════════════════════════";
+        gotoxy_raingame(0, BOARD_HEIGHT - 3);
+        std::wcout << L"  Score: " << score << L"  |  Life: " << life << L"                                        ";
         gotoxy_raingame(0, BOARD_HEIGHT - 2);
-        std::wcout << L"Score: " << score << L" | Life: " << life << L"    ";
-        gotoxy_raingame(0, BOARD_HEIGHT - 1);
-        std::wcout << L"Input: " << currentInput << std::wstring(50, L' ');
+        std::wcout << L"  Input: " << currentInput << std::wstring(50, L' ');
     }
 
     system("cls");
